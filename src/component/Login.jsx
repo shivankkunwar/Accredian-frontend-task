@@ -12,31 +12,26 @@ import Grid from '@mui/material/Grid';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-
-function Copyright(props) {
-  return (
-    <Typography variant="body2" color="text.secondary" align="center" {...props}>
-      {'Copyright © '}
-      <Link color="inherit" href="https://mui.com/">
-        Your Website
-      </Link>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
-}
-
-// TODO remove, this demo shouldn't need to reset the theme.
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as Yup from 'yup';
 
 const defaultTheme = createTheme();
 
+const validationSchema = Yup.object().shape({
+  email: Yup.string().required('Email is required').email('Email is invalid'),
+  password: Yup.string().required('Password is required')
+});
+
 export default function Login() {
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: yupResolver(validationSchema)
+  });
+
+  const onSubmit = (data) => {
     console.log({
-      email: data.get('email'),
-      password: data.get('password'),
+      email: data.email,
+      password: data.password,
     });
   };
 
@@ -74,7 +69,7 @@ export default function Login() {
             <Typography component="h1" variant="h5">
               Sign in
             </Typography>
-            <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 1 }}>
+            <Box component="form" noValidate onSubmit={handleSubmit(onSubmit)} sx={{ mt: 1 }}>
               <TextField
                 margin="normal"
                 required
@@ -84,6 +79,9 @@ export default function Login() {
                 name="email"
                 autoComplete="email"
                 autoFocus
+                {...register('email')}
+                error={Boolean(errors.email)}
+                helperText={errors.email?.message}
               />
               <TextField
                 margin="normal"
@@ -94,6 +92,9 @@ export default function Login() {
                 type="password"
                 id="password"
                 autoComplete="current-password"
+                {...register('password')}
+                error={Boolean(errors.password)}
+                helperText={errors.password?.message}
               />
               <FormControlLabel
                 control={<Checkbox value="remember" color="primary" />}
@@ -114,12 +115,11 @@ export default function Login() {
                   </Link>
                 </Grid>
                 <Grid item>
-                  <Link href="#" variant="body2">
+                  <Link href="/signup" variant="body2">
                     {"Don't have an account? Sign Up"}
                   </Link>
                 </Grid>
               </Grid>
-              <Copyright sx={{ mt: 5 }} />
             </Box>
           </Box>
         </Grid>
